@@ -176,7 +176,7 @@ sub _fault {
 
   my $message = "\nERROR: ";
 
-  if ( length(@error) and ref $error[0] eq 'HTTP::Response' ) {
+  if ( scalar @error and ref $error[0] eq 'HTTP::Response' ) {
     if ( $error[0]->content ) {
       $self->_debug(Dumper(\@error));
       $self->_debug('ERROR Status Line: ' . $error[0]->status_line);
@@ -258,7 +258,7 @@ Performs a GET action on the given URL, and returns the parsed XML response.
 
 sub get {
   my $self = shift @_;
-  my $url  = shift @_;
+  my $url  = shift @_ || '';
   $self->_debug("API: get($url)\n") if $self->{debug};
   my $req = HTTP::Request->new( GET => $url );
   $req->header( Accept => $self->{learned}->{accept_header} );
@@ -437,6 +437,7 @@ sub login {
   $self->{raw}->{login} = $self->_xml_response($response);
 
   for my $link ( @{$self->{raw}->{login}->{Link}} ) {
+    next if not defined $link->{type};
     $self->{learned}->{url}->{admin}         = $link->{href} if $link->{type} eq 'application/vnd.vmware.admin.vcloud+xml';
     $self->{learned}->{url}->{entity}        = $link->{href} if $link->{type} eq 'application/vnd.vmware.vcloud.entity+xml';
     $self->{learned}->{url}->{extensibility} = $link->{href} if $link->{type} eq 'application/vnd.vmware.vcloud.apiextensibility+xml';
@@ -1357,7 +1358,8 @@ my $xml = '<ComposeVAppParams name="'.$name.'" xmlns="http://www.vmware.com/vclo
   <AllEULAsAccepted>true</AllEULAsAccepted>
 </ComposeVAppParams>';
 
-my $xml = '
+# PEC NOTES, It's either the above or the below ... which one is right ?
+$xml = '
 <InstantiateVAppTemplateParams name="'.$name.'" xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" >
 	<Description>Example FTP Server vApp</Description>
 	<InstantiationParams>
