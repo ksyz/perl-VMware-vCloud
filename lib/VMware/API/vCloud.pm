@@ -22,20 +22,20 @@ VMware::API::vCloud - The VMware vCloud API
   my $api = new VMware::API::vCloud (
     $hostname, $username, $password, $orgname
   );
-  
+
   my $raw_login_data = $vcd->login;
 
 =head1 DESCRIPTION
 
 This module provides a bare interface to VMware's vCloud REST API.
 
-VMware::vCloud is designed for high level usage with vCloud Director. This 
+VMware::vCloud is designed for high level usage with vCloud Director. This
 module, however, provides a more low-level access to the REST interface.
 
 Responses received from vCloud are in XML. They are translated via XML::Simple
 with ForceArray set for consistency in nesting. This is the object returned.
 
-Aside from the translation of XML into a perl data structure, no further 
+Aside from the translation of XML into a perl data structure, no further
 alteration is performed on the data.
 
 HTTP errors are automatically parsed and die() is called. If you need to perform
@@ -87,7 +87,7 @@ sub new {
   bless($self,$class);
 
   $self->_regenerate();
-  
+
   $self->_debug("Loaded VMware::vCloud v" . our $VERSION . "\n") if $self->{debug};
   return $self;
 }
@@ -101,7 +101,7 @@ sub new {
 =item debug
 
   0 for no debugging.
-  1 to turn on basic debug messages. 
+  1 to turn on basic debug messages.
   2 to display learned variables on exit.
   3 to show all XML transactions.
 
@@ -173,9 +173,9 @@ sub _debug_with_level {
 sub _fault {
   my $self = shift @_;
   my @error = @_;
-  
+
   my $message = "\nERROR: ";
-  
+
   if ( length(@error) and ref $error[0] eq 'HTTP::Response' ) {
     if ( $error[0]->content ) {
       $self->_debug(Dumper(\@error));
@@ -188,7 +188,7 @@ sub _fault {
     }
     die $message;
   }
-  
+
   while ( my $error = shift @error ) {
     if ( ref $error eq 'SCALAR' ) {
       chomp $error;
@@ -200,13 +200,13 @@ sub _fault {
 }
 
 sub _regenerate {
-  my $self = shift @_;  
+  my $self = shift @_;
   $self->{ua} = LWP::UserAgent->new;
   $self->_debug_with_level(2,"VMware::API::vCLoud::_regenerate()");
 
   $self->{api_version} = $self->api_version();
   $self->_debug("API Version: $self->{api_version}");
-  
+
   $self->{url_base} = URI->new('https://'. $self->{hostname} .'/api/v'. $self->{api_version} .'/');
   $self->_debug("API URL: $self->{url_base}");
 }
@@ -238,7 +238,7 @@ These are direct access to the REST web methods.
 
 Performs a DELETE action on the given URL, and returns the parsed XML response.
 
-=cut 
+=cut
 
 sub delete {
   my $self = shift @_;
@@ -254,7 +254,7 @@ sub delete {
 
 Performs a GET action on the given URL, and returns the parsed XML response.
 
-=cut 
+=cut
 
 sub get {
   my $self = shift @_;
@@ -264,7 +264,7 @@ sub get {
   $req->header( Accept => $self->{learned}->{accept_header} );
   #$self->_debug_with_level(3,"Sending GET: \n\n" . $req->as_string . "\n");
   my $response = $self->{ua}->request($req);
-  my $check = $response->request;  
+  my $check = $response->request;
   $self->_debug_with_level(3,"Sent GET:\n\n" . $check->as_string . "\n");
   $self->_debug_with_level(3,"GET returned:\n\n" . $response->as_string . "\n");
   return $self->_xml_response($response);
@@ -274,7 +274,7 @@ sub get {
 
 Performs a GET action on the given URL, and returns the unparsed HTTP::Request object.
 
-=cut 
+=cut
 
 sub get_raw {
   my $self = shift @_;
@@ -284,7 +284,7 @@ sub get_raw {
   $req->header( Accept => $self->{learned}->{accept_header} );
   #$self->_debug_with_level(3,"Sending GET: \n\n" . $req->as_string . "\n");
   my $response = $self->{ua}->request($req);
-  my $check = $response->request;  
+  my $check = $response->request;
   $self->_debug_with_level(3,"Sent GET:\n\n" . $check->as_string . "\n");
   $self->_debug_with_level(3,"GET returned:\n\n" . $response->as_string . "\n");
   return $response->content;
@@ -294,7 +294,7 @@ sub get_raw {
 
 Performs a POST action on the given URL, and returns the parsed XML response.
 
-The optional value for $type is set as the Content Type for the transaction. 
+The optional value for $type is set as the Content Type for the transaction.
 
 The optional value for $content is used as the content of the post.
 
@@ -328,7 +328,7 @@ sub post {
 
 Performs a PUT action on the given URL, and returns the parsed XML response.
 
-The optional value for $type is set as the Content Type for the transaction. 
+The optional value for $type is set as the Content Type for the transaction.
 
 The optional value for $content is used as the content of the post.
 
@@ -360,11 +360,11 @@ sub put {
 
 =head1 API SHORTHAND METHODS
 
-=head2 api_version 
+=head2 api_version
 
 * Relative URL: /api/versions
 
-This call queries the server for the current version of the API supported. 
+This call queries the server for the current version of the API supported.
 It is implicitly called when library is instanced.
 
 =cut
@@ -375,7 +375,7 @@ sub api_version {
 
   $self->_debug("Checking $url for supported API versions");
 
-  my $req = HTTP::Request->new( GET =>  $url ); 
+  my $req = HTTP::Request->new( GET =>  $url );
   my $response = $self->{ua}->request($req);
   if ( $response->status_line eq '200 OK' ) {
     my $info = XMLin( $response->content );
@@ -413,7 +413,7 @@ sub login {
   my $self = shift @_;
 
   $self->_debug('Login URL: '.$self->{learned}->{url}->{login});
-  my $req = HTTP::Request->new( POST => $self->{learned}->{url}->{login} ); 
+  my $req = HTTP::Request->new( POST => $self->{learned}->{url}->{login} );
 
   $req->authorization_basic( $self->{username} .'@'. $self->{orgname}, $self->{password} );
   $self->_debug("Attempting to login: " . $self->{username} .'@'. $self->{orgname} .' '. $self->{password} );
@@ -421,7 +421,7 @@ sub login {
   $self->{learned}->{accept_header} = 'application/*+xml;version='.$self->{learned}->{version};
   $self->_debug('Accept header: '.$self->{learned}->{accept_header});
   $req->header( Accept => $self->{learned}->{accept_header} );
- 
+
   my $response = $self->{ua}->request($req);
 
   my $token = $response->header('x-vcloud-authorization');
@@ -469,7 +469,7 @@ sub logout  {
   $req->header( Accept => $self->{learned}->{accept_header} );
 
   my $response = $self->{ua}->request($req);
-  return 1 if $response->code() == 401; # No content is a successful logout  
+  return 1 if $response->code() == 401; # No content is a successful logout
   return $self->_xml_response($response);
 }
 
@@ -518,7 +518,7 @@ sub admin_extension_get {
 
 sub admin_extension_vimServer_get {
   my $self = shift @_;
-  my $url  = shift @_;  
+  my $url  = shift @_;
   $self->_debug("API: admin_extension_vimServer_get($url)\n") if $self->{debug};
   return $self->get($url);
 }
@@ -560,7 +560,7 @@ sub catalog_create {
   my $self = shift @_;
   my $url  = shift @_;
   my $conf = shift @_;
-  
+
   $conf->{is_published} = 0 unless defined $conf->{is_published};
 
   $url .= '/catalogs' unless $url =~ /\/catalogs$/;
@@ -604,11 +604,11 @@ sub catalog_get_access {
   my $self = shift @_;
   my $cat_href = shift @_;
   my $org_href = shift @_;
-  
+
   die 'Bad Catalog HREF' unless $cat_href =~ /(\/catalog\/[^\/]+)$/;
   my $href = $org_href . $1 . '/controlAccess';
   $href =~ s/admin\///;
-  
+
   $self->_debug("API: catalog_get_access($href)\n") if $self->{debug};
   return $self->get($href);
 }
@@ -640,10 +640,10 @@ sub catalog_set_access {
 
   die 'Bad Catalog HREF' unless $cat_href =~ /(\/catalog\/[^\/]+)$/;
   my $href = $org_href . $1 . '/action/controlAccess';
-  $href =~ s/admin\///;  
+  $href =~ s/admin\///;
 
   $self->_debug("API: catalog_set_access($href)\n") if $self->{debug};
-  
+
   my $xml = '<ControlAccessParams xmlns="http://www.vmware.com/vcloud/v1.5">
     <IsSharedToEveryone>'.$is_shared.'</IsSharedToEveryone>
     <EveryoneAccessLevel>'.$level.'</EveryoneAccessLevel>
@@ -717,8 +717,8 @@ sub org_create {
             <DeleteOnStorageLeaseExpiration>0</DeleteOnStorageLeaseExpiration>
             <StorageLeaseSeconds>0</StorageLeaseSeconds>
         </VAppTemplateLeaseSettings>';
-  
-  my $vdcs;  
+
+  my $vdcs;
   if ( defined $conf->{vdc} and ref $conf->{vdc} ) {
     for my $vdc (@{$conf->{vdc}}) {
       $vdcs .= '<Vdc href="'.$vdc.'"/> ';
@@ -727,12 +727,12 @@ sub org_create {
       $vdcs = '<Vdc href="'.$conf->{vdc}.'"/> ';
   }
   $vdcs .= "\n";
-  
+
   my $xml = '
 <AdminOrg xmlns="http://www.vmware.com/vcloud/v1.5" name="'.$conf->{name}.'">
   <Description>'.$conf->{desc}.'</Description>
   <FullName>'.$conf->{fullname}.'</FullName>
-  <IsEnabled>'.$conf->{is_enabled}.'</IsEnabled>  
+  <IsEnabled>'.$conf->{is_enabled}.'</IsEnabled>
     <Settings>
         <OrgGeneralSettings>
             <CanPublishCatalogs>'.$conf->{can_publish}.'</CanPublishCatalogs>
@@ -749,7 +749,7 @@ sub org_create {
     </Settings>
     <Vdcs>
       '.$vdcs.'
-    </Vdcs>  
+    </Vdcs>
 </AdminOrg>
 ';
 
@@ -827,10 +827,10 @@ sub org_network_create {
   my $url  = shift @_;
   my $conf = shift @_;
 
-  $conf->{is_shared} = 0 unless defined $conf->{is_shared};  
+  $conf->{is_shared} = 0 unless defined $conf->{is_shared};
 
   $self->_debug("API: org_network_create()\n") if $self->{debug};
-  
+
 #  my $xml = '
 #<OrgNetwork xmlns="http://www.vmware.com/vcloud/v1.5" name="'.$name.'">
 #  <Description>'.$desc.'</Description>
@@ -947,9 +947,9 @@ sub org_vdc_create {
   my $conf = shift @_;
 
   $self->_debug("API: org_vdc_create()\n") if $self->{debug};
-  
+
   my $networkpool = $conf->{np_href} ? '<NetworkPoolReference href="'.$conf->{np_href}.'"/>' : '';
-  
+
   my $sp;
   if ( defined $conf->{sp} and ref $conf->{sp} ) {
     for my $ref ( @{$conf->{sp}} ) {
@@ -970,7 +970,7 @@ sub org_vdc_create {
       <ProviderVdcStorageProfile href="'.$conf->{sp_href}.'" />
    </VdcStorageProfile>';
   }
-   
+
   my $xml = '
 <CreateVdcParams xmlns="http://www.vmware.com/vcloud/v1.5" name="'.$conf->{name}.'">
   <Description>'.$conf->{desc}.'</Description>
@@ -1077,7 +1077,7 @@ sub org_vdc_update {
   my $url  = shift @_;
   my $conf = shift @_;
   $self->_debug("API: org_vdc_update()\n") if $self->{debug};
-  
+
   my $desc        = '<Description>'.$conf->{desc}."</Description>\n";
   my $alloc       = $conf->{allocation_model} ? '<AllocationModel>'.$conf->{allocation_model}."</AllocationModel>\n" : '';
   my $compute;
@@ -1126,9 +1126,9 @@ sub org_vdc_update {
       </Memory>
    </ComputeCapacity>\n";
   }
-  
+
   my $href = $conf->{href} ? 'href="'.$conf->{href}.'"' : '';
-  
+
   my $xml = '<AdminVdc xmlns="http://www.vmware.com/vcloud/v1.5" '.$href.' name="'.$conf->{name}."\">\n"
           . $desc
           . $alloc
@@ -1141,7 +1141,7 @@ sub org_vdc_update {
           . $vcpu
           . $thin
           . $networkpool
-          . $pvdc 
+          . $pvdc
           . $fast
           . "</AdminVdc>\n";
 
@@ -1207,7 +1207,7 @@ HREF example: http://example.vcd.server/api/vAppTemplate/{uuid}
 
 sub template_get_metadata {
   my $self = shift @_;
-  my $href = shift @_;  
+  my $href = shift @_;
   $self->_debug("API: template_get_metadata($href)\n") if $self->{debug};
   return $self->get( $href . '/metadata' );
 }
@@ -1259,14 +1259,14 @@ created. The second element is the HTTP reqest object returned by the server.
 sub vapp_create_from_template {
   my $self = shift @_;
   my $url  = shift @_;
-  
+
   my $name = shift @_;
   my $netid = shift @_;
   my $fencemode = shift @_;
   my $template_href = shift @_;
   my $IpAddressAllocationMode = shift @_;
 
-  my $vdcid  = shift @_;  
+  my $vdcid  = shift @_;
   my $tmplid = shift @_;
 
   $self->_debug("API: vapp_create($url)\n") if $self->{debug};
@@ -1296,7 +1296,7 @@ sub vapp_create_from_template {
 
 =head2 vapp_create_from_sources($url,$name,$netid,$fencemode,$template_href,$IpAddressAllocationMode,$vcdid,$sourcesref)
 
-Given one or more source HREFs, such as VMs withing in an existing template or 
+Given one or more source HREFs, such as VMs withing in an existing template or
 a VM catalog item, create a vApp.
 
 Details of the create task will be returned.
@@ -1311,14 +1311,14 @@ Details of the create task will be returned.
 sub vapp_create_from_sources {
   my $self = shift @_;
   my $url  = shift @_;
-  
+
   my $name = shift @_;
   my $netid = shift @_;
   my $fencemode = shift @_;
   my $template_href = shift @_;
   my $IpAddressAllocationMode = shift @_;
 
-  my $vdcid  = shift @_;  
+  my $vdcid  = shift @_;
   my $tmplid = shift @_;
 
   $self->_debug("API: vapp_create($url)\n") if $self->{debug};
@@ -1331,7 +1331,7 @@ my $xml = '<ComposeVAppParams name="'.$name.'" xmlns="http://www.vmware.com/vclo
       <ovf:Info>Configuration parameters for logical networks</ovf:Info>
       <NetworkConfig networkName="'.$netid.'">
         <Configuration>
-          <ParentNetwork href="'.$netid.'"/> 
+          <ParentNetwork href="'.$netid.'"/>
           <FenceMode>'.$fencemode.'</FenceMode>
         </Configuration>
       </NetworkConfig>
@@ -1390,7 +1390,7 @@ sub vapp_get {
   my $self = shift @_;
   my $vapp = shift @_;
   my $req;
-  
+
   $self->_debug("API: vapp_get($vapp)\n") if $self->{debug};
   return $self->get( $vapp =~ /^[^\/]+$/ ? $self->{url_base} . 'vApp/vapp-' . $vapp : $vapp );
 }
@@ -1407,7 +1407,7 @@ HREF example: http://example.vcd.server/api/vApp/{uuid}
 
 sub vapp_get_metadata {
   my $self = shift @_;
-  my $href = shift @_;  
+  my $href = shift @_;
   $self->_debug("API: vapp_get_metadata($href)\n") if $self->{debug};
   return $self->get( $href . '/metadata' );
 }
@@ -1429,12 +1429,12 @@ sub vapp_recompose_add_vm {
   my $vapp_href = shift @_;
   my $vm_name = shift @_;
   my $vm_href = shift @_;
-  
+
   my $network = shift @_;
   my $storageProfile = shift @_;
-      
+
   my $desc = '';
- 
+
   my $xml = '<RecomposeVAppParams xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" >
     <Description>'.$desc.'</Description>
     <SourcedItem sourceDelete="0">
@@ -1468,9 +1468,9 @@ Here's what they do when inserting a VM into an existing vApp:
 
 RecomposeVAppParams name attribute - names the task. (I think)
 
-SourcedItem name attribute - The name the new VM will be when put into the vApp. 
-(Note that the "href" attribute right next to it will reference the CURRENT 
-location the VM is being copied from. Got that? One attribute is for the 
+SourcedItem name attribute - The name the new VM will be when put into the vApp.
+(Note that the "href" attribute right next to it will reference the CURRENT
+location the VM is being copied from. Got that? One attribute is for the
 "from" side of the action, and the other is for the "to" side. Clear as mud?)
 
 CreateItem attribute - The name of the container vApp that is being edited. If
@@ -1481,8 +1481,8 @@ to the new name.
 
 In both version 1.5 and 5.1 of the API, the "LoginUrl" returned upon log has the
 value of 'https://HOSTNAME/api/sessions'
-	
-To actually succeed with an API log out, however, the URL has to be "session" - 
+
+To actually succeed with an API log out, however, the URL has to be "session" -
 singular - 'https://HOSTNAME/api/session'
 
 This module works around this issue.
@@ -1490,10 +1490,10 @@ This module works around this issue.
 =head3 Template name validation.
 
 Most names in the GUI (for vApps, VMs, Templates, and Catalogs) are limited to
-128 characters, and are restricted to being composed of alpha numerics and 
+128 characters, and are restricted to being composed of alpha numerics and
 standard keyboard punctuations. Notably, spaces and tabs are NOT allowed to
 be entered in the GUI. However, you can upload a template in the API with a
-space in the name. It will only be visable or usable some of the time in the 
+space in the name. It will only be visable or usable some of the time in the
 GUI. Apparently there is a bug in name validation via the API.
 
 =head1 WISH LIST
@@ -1556,10 +1556,10 @@ and other such items.
 
  VMware vCloud API Programming Guide v5.1
   http://pubs.vmware.com/vcd-51/topic/com.vmware.vcloud.api.doc_51/GUID-86CA32C2-3753-49B2-A471-1CE460109ADB.html
-  
+
  vCloud API and Admin API v5.1 schema definition files
   http://pubs.vmware.com/vcd-51/topic/com.vmware.vcloud.api.reference.doc_51/about.html
-  
+
  VMware vCloud API Communities
   http://communities.vmware.com/community/vmtn/developer/forums/vcloudapi
 
