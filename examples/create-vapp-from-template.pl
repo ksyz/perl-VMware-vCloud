@@ -6,8 +6,8 @@ This example script uses the API to compose a template to a vApp
 =head2 Usage
 
   ./create-vapp-from-template.pl --username USER --password PASS --orgname ORG --hostname HOST
-  
-Orgname is optional. It will default to "System" if not given. 
+
+Orgname is optional. It will default to "System" if not given.
 
 =cut
 
@@ -67,7 +67,7 @@ print "\n" . Dumper($task) if $status eq 'error';
 
 sub select_one {
   my $message = shift @_;
-  
+
   my %items = %{shift @_};
   my @items = sort { lc($items{$a}) cmp lc($items{$b}) } keys %items; # Put the names in alpha order
 
