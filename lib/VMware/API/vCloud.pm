@@ -1279,7 +1279,7 @@ sub vapp_create_from_template {
 	<InstantiationParams>
 		<NetworkConfigSection>
 			<ovf:Info>Configuration parameters for vAppNetwork</ovf:Info>
-			<NetworkConfig networkName="vAppNetwork">
+			<NetworkConfig networkName="MDS_Management_LAN">
 				<Configuration>
 					<ParentNetwork href="'.$netid.'"/>
 					<FenceMode>'.$fencemode.'</FenceMode>
