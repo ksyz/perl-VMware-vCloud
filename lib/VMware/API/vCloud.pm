@@ -1288,6 +1288,21 @@ sub vapp_create_from_template {
 		</NetworkConfigSection>
 	</InstantiationParams>
 	<Source href="'.$template_href.'"/>
+   <SourcedVmInstantiationParams>
+      <Source
+         href="https://api.vcd.portal.skyscapecloud.com/api/vAppTemplate/vm-2b513e79-da47-4754-b72d-113c802c74d0" />
+      <StorageProfile
+         href="https://api.vcd.portal.skyscapecloud.com/api/vdcStorageProfile/79705f5d-5297-4f75-9b62-23df9b9c2829">
+      </StorageProfile>
+      <HardwareCustomization>
+         <NumberOfCpus>2</NumberOfCpus>
+         <CoresPerSocket>2</CoresPerSocket>
+         <Disk
+            instanceId="2000">
+            <Size>60240</Size>
+         </Disk>
+      </HardwareCustomization>
+   </SourcedVmInstantiationParams>
   </InstantiateVAppTemplateParams>';
 
   my $ret = $self->post($url,'application/vnd.vmware.vcloud.instantiateVAppTemplateParams+xml',$xml);
