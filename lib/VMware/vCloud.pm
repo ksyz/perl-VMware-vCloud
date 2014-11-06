@@ -174,6 +174,7 @@ sub create_vapp_from_template {
 
   my $fencemode = 'bridged'; # bridged, isolated, or natRouted
   my $IpAddressAllocationMode = 'POOL'; # NONE, MANUAL, POOL, DHCP
+  $self->purge;
   return $self->{api}->vapp_create_from_template($url,$name,$netid,'bridged',$template{href},'POOL',$vdcid,$tmplid);
 }
 
@@ -266,7 +267,7 @@ sub list_vapps {
       my %vdc = $self->get_vdc($vdcid);
       for my $entity ( @{$vdc{ResourceEntities}} ) {
         for my $name ( keys %{$entity->{ResourceEntity}} ) {
-          next unless $entity->{ResourceEntity}->{$name}->{type} eq 'application/vnd.vmware.vcloud.vApp+xml';
+	   next unless $entity->{ResourceEntity}->{$name}->{type} eq 'application/vnd.vmware.vcloud.vApp+xml';
           my $href = $entity->{ResourceEntity}->{$name}->{href};
           $vapps->{$href} = $name;
         }
