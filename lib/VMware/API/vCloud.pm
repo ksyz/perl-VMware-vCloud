@@ -1486,6 +1486,18 @@ sub pec_vapp_recompose_add_vm {
     <Description>'.$desc.'</Description>
     <SourcedItem>
       <Source href="'.$vm_href.'" name="'.$vm_name.'" />
+<InstantiationParams>
+<NetworkConnectionSection xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" type="application/vnd.vmware.vcloud.networkConnectionSection+xml"
+href="'.$vm_href.'/networkConnectionSection/" ovf:required="false">
+<ovf:Info />
+<PrimaryNetworkConnectionIndex>0</PrimaryNetworkConnectionIndex>
+<NetworkConnection network="PSUPP">
+<NetworkConnectionIndex>0</NetworkConnectionIndex>
+<IsConnected>true</IsConnected>
+<IpAddressAllocationMode>DHCP</IpAddressAllocationMode>
+</NetworkConnection>
+</NetworkConnectionSection>
+</InstantiationParams>
       <StorageProfile
          href="'.$storage_profile.'">
       </StorageProfile>
@@ -1494,7 +1506,7 @@ sub pec_vapp_recompose_add_vm {
 </RecomposeVAppParams>';
 
   my $ret = $self->post($vapp_href . '/action/recomposeVApp','application/vnd.vmware.vcloud.recomposeVAppParams+xml',$xml);
-  my $task_href = $ret->[2]->{Tasks}->[0]->{Task}->{task}->{href};
+  my $task_href = $ret->[2]->{href};
   return wantarray ? ( $task_href, $ret ) : \( $task_href, $ret );
 }
 
