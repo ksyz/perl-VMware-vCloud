@@ -1290,7 +1290,7 @@ sub vapp_create_from_template {
 	<Source href="'.$template_href.'"/>
    <SourcedVmInstantiationParams>
       <Source
-         href="https://api.vcd.portal.skyscapecloud.com/api/vAppTemplate/vm-2b513e79-da47-4754-b72d-113c802c74d0" />
+         href="https://api.vcd.portal.skyscapecloud.com/api/vAppTemplate/vm-2b513e79-da47-4754-b72d-113c802c74d0" name="first_box" />
       <StorageProfile
          href="https://api.vcd.portal.skyscapecloud.com/api/vdcStorageProfile/79705f5d-5297-4f75-9b62-23df9b9c2829">
       </StorageProfile>
@@ -1465,6 +1465,37 @@ sub vapp_recompose_add_vm {
 </RecomposeVAppParams>';
 
   return $self->post($vapp_href . '/action/recomposeVApp','application/vnd.vmware.vcloud.recomposeVAppParams+xml',$xml);
+}
+
+sub pec_vapp_recompose_add_vm {
+  my $self = shift @_;
+  my $vapp_name = shift @_;
+  my $vapp_href = shift @_;
+  my $vm_name = shift @_;
+  my $vm_href = shift @_;
+
+  my $netid = shift @_;
+  my $storage_profile = shift @_;
+
+  my $desc = 'PEC Test Description';
+  my $fencemode = 'bridged'; # bridged, isolated, or natRouted
+
+  # PEC NOTES, This one needs to be tied to whichever the networks of the template box.
+
+  my $xml = '<RecomposeVAppParams xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" >
+    <Description>'.$desc.'</Description>
+    <SourcedItem>
+      <Source href="'.$vm_href.'" name="'.$vm_name.'" />
+      <StorageProfile
+         href="'.$storage_profile.'">
+      </StorageProfile>
+    </SourcedItem>
+    <AllEULAsAccepted> 1 </AllEULAsAccepted>
+</RecomposeVAppParams>';
+
+  my $ret = $self->post($vapp_href . '/action/recomposeVApp','application/vnd.vmware.vcloud.recomposeVAppParams+xml',$xml);
+  my $task_href = $ret->[2]->{Tasks}->[0]->{Task}->{task}->{href};
+  return wantarray ? ( $task_href, $ret ) : \( $task_href, $ret );
 }
 
 1;
