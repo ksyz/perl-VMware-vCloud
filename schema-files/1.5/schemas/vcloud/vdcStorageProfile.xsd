@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><!--
+Copyright © 2013 VMware, Inc. All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as explicitly provided herein, no express or implied licenses, under any VMware patents, copyrights, trademarks, or any other intellectual property rights, are granted or waived by implication, exhaustion, estoppel, or otherwise, on modified versions of the Software.
+--><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:meta="http://www.vmware.com/vcloud/meta" elementFormDefault="qualified" targetNamespace="http://www.vmware.com/vcloud/v1.5" version="1.0">
+
+    <xs:include schemaLocation="common.xsd"/>
+    <xs:include schemaLocation="entity.xsd"/>
+
+    <xs:annotation>
+        <xs:documentation xml:lang="en">
+            Schema for the vCloud vDC storage profile type.
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:element name="VdcStorageProfiles" type="VdcStorageProfilesType"/>
+
+    <xs:complexType name="VdcStorageProfilesType">
+        <xs:annotation>
+            <xs:appinfo><meta:version added-in="5.1"/></xs:appinfo>
+            <xs:documentation source="since">5.1</xs:documentation>
+            <xs:documentation xml:lang="en">
+                Container for references to storage profiles associated with a vDC.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="VCloudExtensibleType">
+                <xs:sequence>
+                    <xs:element name="VdcStorageProfile" type="ReferenceType" minOccurs="0" maxOccurs="unbounded">
+                        <xs:annotation>
+                            <xs:appinfo><meta:version added-in="5.1"/></xs:appinfo>
+                            <xs:documentation source="modifiable">always</xs:documentation>
+                            <xs:documentation xml:lang="en">
+                                A reference to a vDC storage profile.
+                            </xs:documentation>
+                            <xs:documentation source="required">false</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="VdcStorageProfile" type="VdcStorageProfileType"/>
+
+    <xs:complexType name="VdcStorageProfileType">
+        <xs:annotation>
+            <xs:appinfo>
+                <meta:version added-in="5.1"/>
+                <meta:content-type>application/vnd.vmware.vcloud.vdcStorageProfile</meta:content-type>
+            </xs:appinfo>
+            <xs:documentation source="since">5.1</xs:documentation>
+            <xs:documentation xml:lang="en">
+                Represents a storage profile in an organization vDC.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="EntityType">
+                <xs:sequence>
+                    <xs:element name="Enabled" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:appinfo><meta:version added-in="5.1"/></xs:appinfo>
+                            <xs:documentation source="modifiable">always</xs:documentation>
+                            <xs:documentation xml:lang="en">
+                                True if this storage profile is enabled for use
+                                in the vDC.
+                            </xs:documentation>
+                            <xs:documentation source="required">false</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Units" type="xs:string" minOccurs="1" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:appinfo><meta:version added-in="5.1"/></xs:appinfo>
+                            <xs:documentation source="modifiable">always</xs:documentation>
+                            <xs:documentation xml:lang="en">
+                                Units used to define Limit.
+                            </xs:documentation>
+                            <xs:documentation source="required">true</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Limit" type="xs:long" minOccurs="1" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:appinfo><meta:version added-in="5.1"/></xs:appinfo>
+                            <xs:documentation source="modifiable">always</xs:documentation>
+                            <xs:documentation xml:lang="en">
+                                Maximum number of Units allocated for this storage profile.
+                            </xs:documentation>
+                            <xs:documentation source="required">true</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="Default" type="xs:boolean" minOccurs="1" maxOccurs="1">
+                        <xs:annotation>
+                            <xs:appinfo><meta:version added-in="5.1"/></xs:appinfo>
+                            <xs:documentation source="modifiable">always</xs:documentation>
+                            <xs:documentation xml:lang="en">
+                                True if this is default storage profile for
+                                this vDC. The default storage profile
+                                is used when an object that can specify a
+                                storage profile is created with no storage
+                                profile specified.
+                            </xs:documentation>
+                            <xs:documentation source="required">true</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+</xs:schema>
