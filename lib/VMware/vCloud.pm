@@ -204,15 +204,16 @@ sub create_vapp_from_sources {
   my $url;
 
   for my $ref (@links) {
-    #$url = $ref->{href} if $ref->{type} eq 'application/vnd.vmware.vcloud.composeVAppParams+xml';
-    $url = $ref->{href} if $ref->{type} eq 'application/vnd.vmware.vcloud.instantiateVAppTemplateParams+xml';
+    $url = $ref->{href} if $ref->{type} eq 'application/vnd.vmware.vcloud.composeVAppParams+xml';
+    #$url = $ref->{href} if $ref->{type} eq 'application/vnd.vmware.vcloud.instantiateVAppTemplateParams+xml';
   }
 
-  my $fencemode = 'bridged'; # bridged, isolated, or natRouted
+  my $fencemode = 'natRouted'; # bridged, isolated, or natRouted
   my $IpAddressAllocationMode = 'POOL'; # NONE, MANUAL, POOL, DHCP
 
-  return $self->{api}->vapp_create_from_sources($url,$name,$netid,'bridged',$template{href},'POOL',$vdcid,$tmplid);
+  return $self->{api}->vapp_create_from_sources($url,$name,$netid,'bridged',$template{href},$IpAddressAllocationMode,$vdcid,$tmplid);
 }
+
 =head2 delete_vapp($vapp_href)
 
 Given the org HREF, call a delete on it.

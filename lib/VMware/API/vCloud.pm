@@ -1346,59 +1346,51 @@ sub vapp_create_from_sources {
   $self->_debug("API: vapp_create($url)\n") if $self->{debug};
 
   # XML to build
-
-my $xml = '<ComposeVAppParams name="'.$name.'" xmlns="http://www.vmware.com/vcloud/v1" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1">
+my $xml = '<ComposeVAppParams name="'.$name.'" xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1"
+ powerOn="true">
   <InstantiationParams>
     <NetworkConfigSection>
-      <ovf:Info>Configuration parameters for logical networks</ovf:Info>
-      <NetworkConfig networkName="'.$netid.'">
-        <Configuration>
-          <ParentNetwork href="'.$netid.'"/>
-          <FenceMode>'.$fencemode.'</FenceMode>
-        </Configuration>
-      </NetworkConfig>
+	<ovf:Info>Configuration parameters for vAppNetwork</ovf:Info>
+	<NetworkConfig networkName="MDS Management">
+	   <Configuration>
+        	<ParentNetwork href="https://api.vcd.portal.skyscapecloud.com/api/network/ccf0f594-e762-46ba-9708-b5b4d1e4ec55"/>
+		<FenceMode>'.$fencemode.'</FenceMode>
+	   </Configuration>
+	</NetworkConfig>
+	<NetworkConfig networkName="PSUPP">
+	   <Configuration>
+		<ParentNetwork href="https://api.vcd.portal.skyscapecloud.com/api/network/66ee48e4-4621-4969-bf8e-ef078ef0fa51"/>
+		<FenceMode>'.$fencemode.'</FenceMode>
+	   </Configuration>
+	</NetworkConfig>
     </NetworkConfigSection>
   </InstantiationParams>
-  <Item>
-    <Source href="'.$template_href.'"/>
+    <SourcedItem sourceDelete="0">
+        <Source href="'.$template_href.'" name="test_box_name" />
     <InstantiationParams>
-      <NetworkConnectionSection
-        type="application/vnd.vmware.vcloud.networkConnectionSection+xml"
+      <NetworkConnectionSection type="application/vnd.vmware.vcloud.networkConnectionSection+xml"
         href="'.$template_href.'/networkConnectionSection/" ovf:required="false">
         <ovf:Info/>
         <PrimaryNetworkConnectionIndex>0</PrimaryNetworkConnectionIndex>
-        <NetworkConnection network="'.$netid.'">
+        <NetworkConnection network="PSUPP">
           <NetworkConnectionIndex>0</NetworkConnectionIndex>
+          <IsConnected>true</IsConnected>
+          <IpAddressAllocationMode>'.$IpAddressAllocationMode.'</IpAddressAllocationMode>
+        </NetworkConnection>
+        <NetworkConnection network="MDS Management">
+          <NetworkConnectionIndex>1</NetworkConnectionIndex>
           <IsConnected>true</IsConnected>
           <IpAddressAllocationMode>'.$IpAddressAllocationMode.'</IpAddressAllocationMode>
         </NetworkConnection>
       </NetworkConnectionSection>
     </InstantiationParams>
-
-  </Item>
+    </SourcedItem>
   <AllEULAsAccepted>true</AllEULAsAccepted>
 </ComposeVAppParams>';
 
-# PEC NOTES, It's either the above or the below ... which one is right ?
-$xml = '
-<InstantiateVAppTemplateParams name="'.$name.'" xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" >
-	<Description>Example FTP Server vApp</Description>
-	<InstantiationParams>
-		<NetworkConfigSection>
-			<ovf:Info>Configuration parameters for vAppNetwork</ovf:Info>
-			<NetworkConfig networkName="vAppNetwork">
-				<Configuration>
-					<ParentNetwork href="'.$netid.'"/>
-					<FenceMode>'.$fencemode.'</FenceMode>
-				</Configuration>
-			</NetworkConfig>
-		</NetworkConfigSection>
-	</InstantiationParams>
-	<Source href="'.$template_href.'"/>
-</InstantiateVAppTemplateParams>
-';
-
-  return $self->post($url,'application/vnd.vmware.vcloud.instantiateVAppTemplateParams+xml',$xml);
+  my $ret = $self->post($url,'application/vnd.vmware.vcloud.composeVAppParams+xml',$xml);
+  my $task_href = $ret->[2]->{Tasks}->[0]->{Task}->{task}->{href};
+  return wantarray ? ( $task_href, $ret ) : \( $task_href, $ret );
 }
 
 =head2 vapp_get($vappid or $vapp_href)

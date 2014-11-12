@@ -59,7 +59,7 @@ my $orgid = 'https://api.vcd.portal.skyscapecloud.com/api/org/3aa61e25-d4b0-4101
 my $storage_profile = "https://api.vcd.portal.skyscapecloud.com/api/vdcStorageProfile/fd77b82f-5ff8-479f-b43d-418034bd8183";
 
 # vApp name
-my $vapp_name = 'PEC Example vApp03';
+my $vapp_name = 'PEC Example vApp04';
 my $vapp_href;
 
 ### Delete Vapp if it already exists ...
@@ -76,9 +76,11 @@ if (exists $vapps{$vapp_name} ) {
 
 
 
-
 # Build the vApp
-my ($task_href,$ret) = $vcd->create_vapp_from_template($vapp_name,$vdcid,$templateid,$networkid);
+# my ($task_href,$ret) = $vcd->create_vapp_from_template($vapp_name,$vdcid,$templateid,$networkid);
+# base-centos6-x64-80G
+my $box_template = "https://api.vcd.portal.skyscapecloud.com/api/vAppTemplate/vm-33cd95a2-c984-41e1-be2a-750b6597732a";
+my ($task_href,$ret) = $vcd->create_vapp_from_sources($vapp_name,$vdcid,$box_template,$networkid);
 
 # Wait on task to complete
 my ($status,$task) = $vcd->wait_on_task($task_href);
