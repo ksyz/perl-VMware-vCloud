@@ -1279,27 +1279,33 @@ sub vapp_create_from_template {
 	<InstantiationParams>
 		<NetworkConfigSection>
 			<ovf:Info>Configuration parameters for vAppNetwork</ovf:Info>
-			<NetworkConfig networkName="MDS_Management_LAN">
+			<NetworkConfig networkName="nat">
 				<Configuration>
 					<ParentNetwork href="'.$netid.'"/>
 					<FenceMode>'.$fencemode.'</FenceMode>
 				</Configuration>
 			</NetworkConfig>
+			<NetworkConfig networkName="bridged">
+				<Configuration>
+					<ParentNetwork href="https://api.vcd.portal.skyscapecloud.com/api/network/ccf0f594-e762-46ba-9708-b5b4d1e4ec55"/>
+					<FenceMode>'.$fencemode.'</FenceMode>
+				</Configuration>
+			</NetworkConfig>
 		</NetworkConfigSection>
 	</InstantiationParams>
-	<Source href="'.$template_href.'"/>
+	<Source href="'.$template_href.'" name="template_box"/>
    <SourcedVmInstantiationParams>
       <Source
-         href="https://api.vcd.portal.skyscapecloud.com/api/vAppTemplate/vm-2b513e79-da47-4754-b72d-113c802c74d0" name="first_box" />
+         href="https://api.vcd.portal.skyscapecloud.com/api/vAppTemplate/vm-33cd95a2-c984-41e1-be2a-750b6597732a" name="first_box" />
       <StorageProfile
-         href="https://api.vcd.portal.skyscapecloud.com/api/vdcStorageProfile/79705f5d-5297-4f75-9b62-23df9b9c2829">
+         href="https://api.vcd.portal.skyscapecloud.com/api/vdcStorageProfile/fd77b82f-5ff8-479f-b43d-418034bd8183">
       </StorageProfile>
       <HardwareCustomization>
          <NumberOfCpus>2</NumberOfCpus>
          <CoresPerSocket>2</CoresPerSocket>
          <Disk
             instanceId="2000">
-            <Size>60240</Size>
+            <Size>83240</Size>
          </Disk>
       </HardwareCustomization>
    </SourcedVmInstantiationParams>

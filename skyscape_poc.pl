@@ -47,15 +47,19 @@ $orgname  = prompt('x','Orgname:', '', 'System' ) unless length $orgname;
 my $vcd = new VMware::vCloud ( $hostname, $username, $password, $orgname, { debug => 3 } );
 
 # dfef05b7-a0c8-4aa7-8f24-b8bf0749c375 , base-centos with the broken nat interface.
-my $templateid = 'https://api.vcd.portal.skyscapecloud.com/api/vAppTemplate/vappTemplate-fbce28a1-f89c-435a-a0e5-3e6b8ad43e80';
+# base-centos6-x64-80G
+my $templateid = 'https://api.vcd.portal.skyscapecloud.com/api/vAppTemplate/vappTemplate-c346f5d7-ea8f-4dae-a09b-a14025115423';
 # PSUPP
 my $networkid = 'https://api.vcd.portal.skyscapecloud.com/api/network/66ee48e4-4621-4969-bf8e-ef078ef0fa51';
 #  MDS - Defra CAPDP-PSUPP (IL2-PROD-BASIC)
 my $vdcid = 'https://api.vcd.portal.skyscapecloud.com/api/vdc/c042926f-1ce8-4e4f-87a0-534b8c689b77';
 # CAPDP-PSUPP
 my $orgid = 'https://api.vcd.portal.skyscapecloud.com/api/org/3aa61e25-d4b0-4101-bace-2a3852509fa6';
+# 19-98-3-BASIC-Storage2
+my $storage_profile = "https://api.vcd.portal.skyscapecloud.com/api/vdcStorageProfile/fd77b82f-5ff8-479f-b43d-418034bd8183";
+
 # vApp name
-my $vapp_name = 'PEC Example vApp02';
+my $vapp_name = 'PEC Example vApp03';
 my $vapp_href;
 
 ### Delete Vapp if it already exists ...
@@ -73,7 +77,6 @@ if (exists $vapps{$vapp_name} ) {
 
 
 
-
 # Build the vApp
 my ($task_href,$ret) = $vcd->create_vapp_from_template($vapp_name,$vdcid,$templateid,$networkid);
 
@@ -84,12 +87,8 @@ print "\nSTATUS: $status\n";
 print "\n" . Dumper($task) if $status eq 'error';
 
 # vApp href
-my $vapp_href = $task->{Owner}{$vapp_name}{href};
+$vapp_href = $task->{Owner}{$vapp_name}{href};
 my $vapp = $vcd->get_vapp( $vapp_href );
-
-my %vapps = $vcd->list_vapps();
-
-my $vapp = $vcd->{api}->vapp_get($vapp_href);
 
 my $new_vm_name = "Another VM 1";
 ($task_href,$ret) = $vcd->{api}->pec_vapp_recompose_add_vm(
@@ -102,5 +101,7 @@ my $new_vm_name = "Another VM 1";
 );
 
 ($status,$task) = $vcd->wait_on_task($task_href);
+
+$DB::single=1;
 
 print "Before going ...\n";
