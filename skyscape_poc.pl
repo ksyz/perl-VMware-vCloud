@@ -54,9 +54,27 @@ my $networkid = 'https://api.vcd.portal.skyscapecloud.com/api/network/66ee48e4-4
 my $vdcid = 'https://api.vcd.portal.skyscapecloud.com/api/vdc/c042926f-1ce8-4e4f-87a0-534b8c689b77';
 # CAPDP-PSUPP
 my $orgid = 'https://api.vcd.portal.skyscapecloud.com/api/org/3aa61e25-d4b0-4101-bace-2a3852509fa6';
+# vApp name
+my $vapp_name = 'PEC Example vApp02';
+my $vapp_href;
+
+### Delete Vapp if it already exists ...
+my %vapps = reverse $vcd->list_vapps;
+if (exists $vapps{$vapp_name} ) {
+    # PEC TODO, fails when vApp is not running ....
+    eval {
+	my ($task_href,$ret) = $vcd->{api}->vapp_undeploy($vapps{$vapp_name});
+	my ($status,$task) = $vcd->wait_on_task($task_href);
+    };
+    $vcd->delete_vapp($vapps{$vapp_name});
+    # PEC NOTES, perhaps we should also handle the task here ?
+}
+
+
+
+
 
 # Build the vApp
-my $vapp_name = 'PEC Example vApp01';
 my ($task_href,$ret) = $vcd->create_vapp_from_template($vapp_name,$vdcid,$templateid,$networkid);
 
 # Wait on task to complete

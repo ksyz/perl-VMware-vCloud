@@ -1510,6 +1510,21 @@ href="'.$vm_href.'/networkConnectionSection/" ovf:required="false">
   return wantarray ? ( $task_href, $ret ) : \( $task_href, $ret );
 }
 
+
+sub vapp_undeploy {
+    my $self = shift;
+    my $vapp_href = shift;
+
+    my $xml = '<UndeployVAppParams xmlns="http://www.vmware.com/vcloud/v1.5">
+<UndeployPowerAction>powerOff</UndeployPowerAction>
+</UndeployVAppParams>';
+
+    my $ret = $self->post($vapp_href . '/action/undeploy','application/vnd.vmware.vcloud.undeployVAppParams+xml',$xml);
+    my $task_href = $ret->[2]->{href};
+    return wantarray ? ( $task_href, $ret ) : \( $task_href, $ret );
+
+}
+
 1;
 
 __END__
