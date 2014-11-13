@@ -1379,6 +1379,19 @@ my $xml = '<ComposeVAppParams name="'.$name.'" xmlns="http://www.vmware.com/vclo
           <IpAddressAllocationMode>'.$IpAddressAllocationMode.'</IpAddressAllocationMode>
         </NetworkConnection>
       </NetworkConnectionSection>
+<GuestCustomizationSection
+xmlns="http://www.vmware.com/vcloud/v1.5"
+xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1"
+ovf:required="false">
+<ovf:Info>Specifies Guest OS Customization Settings</ovf:Info>
+<Enabled>true</Enabled>
+<CustomizationScript>
+#!/bin/sh
+echo $(date) | tee -a /tmp/pec.log
+echo Args: $@ | tee -a /tmp/pec.log
+</CustomizationScript>
+<ComputerName>test-box-name</ComputerName>
+</GuestCustomizationSection>
     </InstantiationParams>
       <StorageProfile
          href="https://api.vcd.portal.skyscapecloud.com/api/vdcStorageProfile/fd77b82f-5ff8-479f-b43d-418034bd8183">
@@ -1502,6 +1515,19 @@ href="'.$vm_href.'/networkConnectionSection/" ovf:required="false">
 <IpAddressAllocationMode>POOL</IpAddressAllocationMode>
 </NetworkConnection>
 </NetworkConnectionSection>
+<GuestCustomizationSection
+xmlns="http://www.vmware.com/vcloud/v1.5"
+xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1"
+ovf:required="false">
+<ovf:Info>Specifies Guest OS Customization Settings</ovf:Info>
+<Enabled>true</Enabled>
+<CustomizationScript>
+#!/bin/sh
+echo $(date) | tee -a /tmp/pec.log
+echo Args: $@ | tee -a /tmp/pec.log
+</CustomizationScript>
+<ComputerName>another-box-name</ComputerName>
+</GuestCustomizationSection>
 </InstantiationParams>
       <StorageProfile
          href="'.$storage_profile.'">
