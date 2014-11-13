@@ -59,7 +59,7 @@ my $orgid = 'https://api.vcd.portal.skyscapecloud.com/api/org/3aa61e25-d4b0-4101
 my $storage_profile = "https://api.vcd.portal.skyscapecloud.com/api/vdcStorageProfile/fd77b82f-5ff8-479f-b43d-418034bd8183";
 
 # vApp name
-my $vapp_name = 'PEC Example vApp04';
+my $vapp_name = 'PEC Example vApp05';
 my $vapp_href;
 
 ### Delete Vapp if it already exists ...
@@ -88,7 +88,7 @@ my ($status,$task) = $vcd->wait_on_task($task_href);
 print "\nSTATUS: $status\n";
 print "\n" . Dumper($task) if $status eq 'error';
 
-# vApp href
+# # vApp href
 $vapp_href = $task->{Owner}{$vapp_name}{href};
 my $vapp = $vcd->get_vapp( $vapp_href );
 
@@ -97,9 +97,9 @@ my $new_vm_name = "Another VM 1";
     $vapp_name,
     $vapp_href,
     $new_vm_name, # vm_name
-    "https://api.vcd.portal.skyscapecloud.com/api/vAppTemplate/vm-2b513e79-da47-4754-b72d-113c802c74d0", # vmHref
+    $box_template, # vm_href
     $networkid, # netid
-    "https://api.vcd.portal.skyscapecloud.com/api/vdcStorageProfile/79705f5d-5297-4f75-9b62-23df9b9c2829", # Storage Profile
+    $storage_profile, # Storage Profile
 );
 
 ($status,$task) = $vcd->wait_on_task($task_href);
