@@ -208,10 +208,10 @@ sub create_vapp_from_sources {
     #$url = $ref->{href} if $ref->{type} eq 'application/vnd.vmware.vcloud.instantiateVAppTemplateParams+xml';
   }
 
-  my $fencemode = 'natRouted'; # bridged, isolated, or natRouted
-  my $IpAddressAllocationMode = 'POOL'; # NONE, MANUAL, POOL, DHCP
+  my $fencemode = 'bridged'; # bridged, isolated, or natRouted
+  my $IpAddressAllocationMode = 'POOL'; # NONE, MANUAL, POOL, DHCP, STATIC
 
-  return $self->{api}->vapp_create_from_sources($url,$name,$netid,'bridged',$template{href},$IpAddressAllocationMode,$vdcid,$tmplid);
+  return $self->{api}->vapp_create_from_sources($url,$name,$netid,$fencemode,$template{href},$IpAddressAllocationMode,$vdcid,$tmplid);
 }
 
 =head2 delete_vapp($vapp_href)

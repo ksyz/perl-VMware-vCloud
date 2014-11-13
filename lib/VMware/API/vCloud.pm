@@ -1345,18 +1345,19 @@ sub vapp_create_from_sources {
 
   $self->_debug("API: vapp_create($url)\n") if $self->{debug};
 
-  # XML to build
+	# <NetworkConfig networkName="MDS Management">
+	#    <Configuration>
+        # 	<ParentNetwork href="https://api.vcd.portal.skyscapecloud.com/api/network/ccf0f594-e762-46ba-9708-b5b4d1e4ec55"/>
+	# 	<FenceMode>'.$fencemode.'</FenceMode>
+	#    </Configuration>
+	# </NetworkConfig>
+
+      # XML to build
 my $xml = '<ComposeVAppParams name="'.$name.'" xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1"
  powerOn="true">
   <InstantiationParams>
     <NetworkConfigSection>
 	<ovf:Info>Configuration parameters for vAppNetwork</ovf:Info>
-	<NetworkConfig networkName="MDS Management">
-	   <Configuration>
-        	<ParentNetwork href="https://api.vcd.portal.skyscapecloud.com/api/network/ccf0f594-e762-46ba-9708-b5b4d1e4ec55"/>
-		<FenceMode>'.$fencemode.'</FenceMode>
-	   </Configuration>
-	</NetworkConfig>
 	<NetworkConfig networkName="PSUPP">
 	   <Configuration>
 		<ParentNetwork href="https://api.vcd.portal.skyscapecloud.com/api/network/66ee48e4-4621-4969-bf8e-ef078ef0fa51"/>
@@ -1377,16 +1378,18 @@ my $xml = '<ComposeVAppParams name="'.$name.'" xmlns="http://www.vmware.com/vclo
           <IsConnected>true</IsConnected>
           <IpAddressAllocationMode>'.$IpAddressAllocationMode.'</IpAddressAllocationMode>
         </NetworkConnection>
-        <NetworkConnection network="MDS Management">
-          <NetworkConnectionIndex>1</NetworkConnectionIndex>
-          <IsConnected>true</IsConnected>
-          <IpAddressAllocationMode>'.$IpAddressAllocationMode.'</IpAddressAllocationMode>
-        </NetworkConnection>
       </NetworkConnectionSection>
     </InstantiationParams>
     </SourcedItem>
   <AllEULAsAccepted>true</AllEULAsAccepted>
 </ComposeVAppParams>';
+
+        # <NetworkConnection network="MDS Management">
+        #   <NetworkConnectionIndex>1</NetworkConnectionIndex>
+        #   <IsConnected>true</IsConnected>
+        #   <IpAddressAllocationMode>POOL</IpAddressAllocationMode>
+        # </NetworkConnection>
+
 
   my $ret = $self->post($url,'application/vnd.vmware.vcloud.composeVAppParams+xml',$xml);
   my $task_href = $ret->[2]->{Tasks}->[0]->{Task}->{task}->{href};
@@ -1492,7 +1495,7 @@ href="'.$vm_href.'/networkConnectionSection/" ovf:required="false">
 <NetworkConnection network="PSUPP">
 <NetworkConnectionIndex>0</NetworkConnectionIndex>
 <IsConnected>true</IsConnected>
-<IpAddressAllocationMode>DHCP</IpAddressAllocationMode>
+<IpAddressAllocationMode>POOL</IpAddressAllocationMode>
 </NetworkConnection>
 </NetworkConnectionSection>
 </InstantiationParams>
@@ -1502,6 +1505,12 @@ href="'.$vm_href.'/networkConnectionSection/" ovf:required="false">
     </SourcedItem>
     <AllEULAsAccepted> 1 </AllEULAsAccepted>
 </RecomposeVAppParams>';
+
+# <NetworkConnection network="MDS Management">
+# <NetworkConnectionIndex>1</NetworkConnectionIndex>
+# <IsConnected>true</IsConnected>
+# <IpAddressAllocationMode>MANUAL</IpAddressAllocationMode>
+# </NetworkConnection>
 
   my $ret = $self->post($vapp_href . '/action/recomposeVApp','application/vnd.vmware.vcloud.recomposeVAppParams+xml',$xml);
   my $task_href = $ret->[2]->{href};
