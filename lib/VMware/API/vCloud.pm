@@ -1486,7 +1486,8 @@ sub pec_vapp_recompose_add_vm {
 
   # PEC NOTES, This one needs to be tied to whichever the networks of the template box.
 
-  my $xml = '<RecomposeVAppParams xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" >
+  my $xml = '<RecomposeVAppParams xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1"
+powerOn="true" >
     <Description>'.$desc.'</Description>
     <SourcedItem>
       <Source href="'.$vm_href.'" name="'.$vm_name.'" />
