@@ -1380,6 +1380,9 @@ my $xml = '<ComposeVAppParams name="'.$name.'" xmlns="http://www.vmware.com/vclo
         </NetworkConnection>
       </NetworkConnectionSection>
     </InstantiationParams>
+      <StorageProfile
+         href="https://api.vcd.portal.skyscapecloud.com/api/vdcStorageProfile/fd77b82f-5ff8-479f-b43d-418034bd8183">
+      </StorageProfile>
     </SourcedItem>
   <AllEULAsAccepted>true</AllEULAsAccepted>
 </ComposeVAppParams>';
