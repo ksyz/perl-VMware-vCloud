@@ -1366,8 +1366,9 @@ my $xml = '<ComposeVAppParams name="'.$name.'" xmlns="http://www.vmware.com/vclo
 	</NetworkConfig>
     </NetworkConfigSection>
   </InstantiationParams>
+
     <SourcedItem sourceDelete="0">
-        <Source href="'.$template_href.'" name="test_box_name" />
+        <Source href="'.$template_href.'" name="test_box_name0" />
     <InstantiationParams>
       <NetworkConnectionSection type="application/vnd.vmware.vcloud.networkConnectionSection+xml"
         href="'.$template_href.'/networkConnectionSection/" ovf:required="false">
@@ -1388,15 +1389,20 @@ ovf:required="false">
 <CustomizationScript>
 #!/bin/sh
 echo $(date) | tee -a /tmp/pec.log
-echo Args: $@ | tee -a /tmp/pec.log
+hostname=$(hostname)
+ip=$( ip addr show | grep inet | grep -v &quot;127.0&quot; | grep -v inet6 | head -1 | awk &quot;{print \$2}&quot; )
+echo Args: $@ ip $ip | tee -a /tmp/pec.log
+curl -v -X POST &quot;http://10.63.0.11:6969/?host=$hostname&amp;ip=$ip&quot; 2>&amp;1 | tee -a /tmp/pec.log
 </CustomizationScript>
-<ComputerName>test-box-name</ComputerName>
+<ComputerName>test-box-name0</ComputerName>
 </GuestCustomizationSection>
     </InstantiationParams>
       <StorageProfile
          href="https://api.vcd.portal.skyscapecloud.com/api/vdcStorageProfile/fd77b82f-5ff8-479f-b43d-418034bd8183">
       </StorageProfile>
     </SourcedItem>
+
+
   <AllEULAsAccepted>true</AllEULAsAccepted>
 </ComposeVAppParams>';
 
@@ -1405,7 +1411,6 @@ echo Args: $@ | tee -a /tmp/pec.log
         #   <IsConnected>true</IsConnected>
         #   <IpAddressAllocationMode>POOL</IpAddressAllocationMode>
         # </NetworkConnection>
-
 
   my $ret = $self->post($url,'application/vnd.vmware.vcloud.composeVAppParams+xml',$xml);
   my $task_href = $ret->[2]->{Tasks}->[0]->{Task}->{task}->{href};
@@ -1524,9 +1529,12 @@ ovf:required="false">
 <CustomizationScript>
 #!/bin/sh
 echo $(date) | tee -a /tmp/pec.log
-echo Args: $@ | tee -a /tmp/pec.log
+hostname=$(hostname)
+ip=$( ip addr show | grep inet | grep -v &quot;127.0&quot; | grep -v inet6 | head -1 | awk &quot;{print \$2}&quot; )
+echo Args: $@ ip $ip | tee -a /tmp/pec.log
+curl -v -X POST &quot;http://10.63.0.11:6969/?host=$hostname&amp;ip=$ip&quot; 2>&amp;1 | tee -a /tmp/pec.log
 </CustomizationScript>
-<ComputerName>another-box-name</ComputerName>
+<ComputerName>'.$vm_name.'</ComputerName>
 </GuestCustomizationSection>
 </InstantiationParams>
       <StorageProfile
@@ -1535,6 +1543,7 @@ echo Args: $@ | tee -a /tmp/pec.log
     </SourcedItem>
     <AllEULAsAccepted> 1 </AllEULAsAccepted>
 </RecomposeVAppParams>';
+
 
 # <NetworkConnection network="MDS Management">
 # <NetworkConnectionIndex>1</NetworkConnectionIndex>

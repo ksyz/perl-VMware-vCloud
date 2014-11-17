@@ -59,7 +59,7 @@ my $orgid = 'https://api.vcd.portal.skyscapecloud.com/api/org/3aa61e25-d4b0-4101
 my $storage_profile = "https://api.vcd.portal.skyscapecloud.com/api/vdcStorageProfile/fd77b82f-5ff8-479f-b43d-418034bd8183";
 
 # vApp name
-my $vapp_name = 'PEC Example vApp05';
+my $vapp_name = 'PEC Example vApp08';
 my $vapp_href;
 
 ### Delete Vapp if it already exists ...
@@ -70,11 +70,10 @@ if (exists $vapps{$vapp_name} ) {
 	my ($task_href,$ret) = $vcd->{api}->vapp_undeploy($vapps{$vapp_name});
 	my ($status,$task) = $vcd->wait_on_task($task_href);
     };
-    $vcd->delete_vapp($vapps{$vapp_name});
+    my $a = $vcd->delete_vapp($vapps{$vapp_name});
+    print "PEC DBG: DELETE\n";
     # PEC NOTES, perhaps we should also handle the task here ?
 }
-
-
 
 # Build the vApp
 # my ($task_href,$ret) = $vcd->create_vapp_from_template($vapp_name,$vdcid,$templateid,$networkid);
@@ -92,17 +91,27 @@ print "\n" . Dumper($task) if $status eq 'error';
 $vapp_href = $task->{Owner}{$vapp_name}{href};
 my $vapp = $vcd->get_vapp( $vapp_href );
 
-my $new_vm_name = "Another VM 1";
-($task_href,$ret) = $vcd->{api}->pec_vapp_recompose_add_vm(
-    $vapp_name,
-    $vapp_href,
-    $new_vm_name, # vm_name
-    $box_template, # vm_href
-    $networkid, # netid
-    $storage_profile, # Storage Profile
-);
+my @hosts = qw|vm1 vm2 vm3|;
+my @tasks;
+foreach my $host (@hosts) {
+    print "\nCREATE: vm $host\n";
+    my $new_vm_name = $host;
+    $DB::single=1;
+    ($task_href,$ret) = $vcd->{api}->pec_vapp_recompose_add_vm(
+	$vapp_name,
+	$vapp_href,
+	$new_vm_name,		# vm_name
+	$box_template,		# vm_href
+	$networkid,		# netid
+	$storage_profile,	# Storage Profile
+    );
 
-($status,$task) = $vcd->wait_on_task($task_href);
+    ($status,$task) = $vcd->wait_on_task($task_href);
+    print "\nSTATUS: $status\n";
+    print "\n" . Dumper($task) if $status eq 'error';
+}
+
+# my %tasks_status = $vcd->wait_on_tasks(@tasks);
 
 $DB::single=1;
 
