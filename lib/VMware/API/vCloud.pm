@@ -1419,6 +1419,94 @@ curl -v -X POST &quot;http://labs.devopsguys.com:8080/server?host=$hostname&amp;
   return wantarray ? ( $task_href, $ret ) : \( $task_href, $ret );
 }
 
+sub pec_vapp_create_from_sources {
+  my ($self,$args) = @_;
+  my $fencemode = 'bridged';	# bridged, isolated, or natRouted
+  my $IpAddressAllocationMode = 'POOL'; # NONE, MANUAL, POOL, DHCP, STATIC
+
+  $self->_debug("API: pec_vapp_create($args->{url})\n") if $self->{debug};
+
+	# <NetworkConfig networkName="MDS Management">
+	#    <Configuration>
+        # 	<ParentNetwork href="https://api.vcd.portal.skyscapecloud.com/api/network/ccf0f594-e762-46ba-9708-b5b4d1e4ec55"/>
+	# 	<FenceMode>'.$args{fencemode}.'</FenceMode>
+	#    </Configuration>
+	# </NetworkConfig>
+
+  my $xml_snippet = '<SourcedItem sourceDelete="0">
+        <Source href="%s" name="%s" />
+    <InstantiationParams>
+      <NetworkConnectionSection type="application/vnd.vmware.vcloud.networkConnectionSection+xml"
+        href="%s/networkConnectionSection/" ovf:required="false">
+        <ovf:Info/>
+        <PrimaryNetworkConnectionIndex>0</PrimaryNetworkConnectionIndex>
+        <NetworkConnection network="PSUPP">
+          <NetworkConnectionIndex>0</NetworkConnectionIndex>
+          <IsConnected>true</IsConnected>
+          <IpAddressAllocationMode>%s</IpAddressAllocationMode>
+        </NetworkConnection>
+      </NetworkConnectionSection>
+<GuestCustomizationSection
+xmlns="http://www.vmware.com/vcloud/v1.5"
+xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1"
+ovf:required="false">
+<ovf:Info>Specifies Guest OS Customization Settings</ovf:Info>
+<Enabled>true</Enabled>
+<CustomizationScript>
+#!/bin/sh
+echo $(date) | tee -a /tmp/pec.log
+hostname=$(hostname)
+ip=$( ip addr show | grep inet | grep -v &quot;127.0&quot; | grep -v inet6 | head -1 | awk &quot;{print \$2}&quot; )
+echo Args: $@ ip $ip | tee -a /tmp/pec.log
+echo &quot;nameserver 8.8.8.8&quot; > /etc/resolv.conf
+curl -v -X POST &quot;http://labs.devopsguys.com:8080/server?host=$hostname&amp;ip=$ip&amp;role=%s&amp;vapp=%s&quot; 2>&amp;1 | tee -a /tmp/pec.log
+</CustomizationScript>
+<ComputerName>%s</ComputerName>
+</GuestCustomizationSection>
+    </InstantiationParams>
+      <StorageProfile
+         href="https://api.vcd.portal.skyscapecloud.com/api/vdcStorageProfile/fd77b82f-5ff8-479f-b43d-418034bd8183">
+      </StorageProfile>
+    </SourcedItem>
+';
+  my $extra_xml;
+  foreach my $host (keys %{ $args->{hosts} }) {
+      $extra_xml .=  sprintf($xml_snippet,$args->{vapp_url},$host,$args->{vapp_url},$IpAddressAllocationMode,$args->{hosts}{$host}{role},$args->{vapp_name},$host)
+  }
+
+
+  # XML to build
+  my $xml = '<ComposeVAppParams name="'.$args->{vapp_name}.'" xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1"
+ powerOn="true">
+  <InstantiationParams>
+    <NetworkConfigSection>
+	<ovf:Info>Configuration parameters for vAppNetwork</ovf:Info>
+	<NetworkConfig networkName="PSUPP">
+	   <Configuration>
+		<ParentNetwork href="https://api.vcd.portal.skyscapecloud.com/api/network/66ee48e4-4621-4969-bf8e-ef078ef0fa51"/>
+		<FenceMode>'.$fencemode.'</FenceMode>
+	   </Configuration>
+	</NetworkConfig>
+    </NetworkConfigSection>
+  </InstantiationParams>
+
+  %s
+  <AllEULAsAccepted>true</AllEULAsAccepted>
+</ComposeVAppParams>';
+
+        # <NetworkConnection network="MDS Management">
+        #   <NetworkConnectionIndex>1</NetworkConnectionIndex>
+        #   <IsConnected>true</IsConnected>
+        #   <IpAddressAllocationMode>POOL</IpAddressAllocationMode>
+        # </NetworkConnection>
+
+  $xml = sprintf($xml,$extra_xml);
+      $DB::single=1;
+  my $ret = $self->post($args->{url},'application/vnd.vmware.vcloud.composeVAppParams+xml',$xml);
+  my $task_href = $ret->[2]->{Tasks}->[0]->{Task}->{task}->{href};
+  return wantarray ? ( $task_href, $ret ) : \( $task_href, $ret );
+}
+
 =head2 vapp_get($vappid or $vapp_href)
 
 As a parameter, this method thakes the raw numeric id of the vApp or the full URL.

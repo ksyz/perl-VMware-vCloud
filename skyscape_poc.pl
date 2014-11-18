@@ -34,15 +34,19 @@ use Term::Prompt;
 use VMware::vCloud;
 use strict;
 
-my ( $username, $password, $hostname, $orgname );
+my ( $username, $password, $hostname, $orgname, $vapp_name );
 
-my $ret = GetOptions ( 'username=s' => \$username, 'password=s' => \$password,
-                       'orgname=s' => \$orgname, 'hostname=s' => \$hostname );
+my $retopt = GetOptions ( 'username=s' => \$username, 'password=s' => \$password,
+                       'orgname=s' => \$orgname, 'hostname=s' => \$hostname,
+		       'vappname=s' => \$vapp_name
+		   );
 
 $hostname = prompt('x','Hostname of the vCloud Server:', '', '' ) unless length $hostname;
 $username = prompt('x','Username:', '', undef ) unless length $username;
 $password = prompt('p','Password:', '', undef ) and print "\n" unless length $password;
 $orgname  = prompt('x','Orgname:', '', 'System' ) unless length $orgname;
+
+$vapp_name = "default_vapp" unless length $vapp_name;
 
 my $vcd = new VMware::vCloud ( $hostname, $username, $password, $orgname, { debug => 3 } );
 
@@ -60,16 +64,15 @@ my $orgid = 'https://api.vcd.portal.skyscapecloud.com/api/org/3aa61e25-d4b0-4101
 # 19-98-3-BASIC-Storage2
 my $storage_profile = "https://api.vcd.portal.skyscapecloud.com/api/vdcStorageProfile/fd77b82f-5ff8-479f-b43d-418034bd8183";
 
-# vApp name
-my $vapp_name = 'DemovApp02';
 my $vapp_href;
 
 ### Delete Vapp if it already exists ...
 my %vapps = reverse $vcd->list_vapps;
+my ($task_href,$ret);
 if (exists $vapps{$vapp_name} ) {
     # PEC TODO, fails when vApp is not running ....
     eval {
-	my ($task_href,$ret) = $vcd->{api}->vapp_undeploy($vapps{$vapp_name});
+	($task_href,$ret) = $vcd->{api}->vapp_undeploy($vapps{$vapp_name});
 	my ($status,$task) = $vcd->wait_on_task($task_href);
     };
     my $a = $vcd->delete_vapp($vapps{$vapp_name});
@@ -81,7 +84,44 @@ if (exists $vapps{$vapp_name} ) {
 # my ($task_href,$ret) = $vcd->create_vapp_from_template($vapp_name,$vdcid,$templateid,$networkid);
 # base-centos6-x64-80G
 my $box_template = "https://api.vcd.portal.skyscapecloud.com/api/vAppTemplate/vm-33cd95a2-c984-41e1-be2a-750b6597732a";
-my ($task_href,$ret) = $vcd->create_vapp_from_sources($vapp_name,$vdcid,$box_template,$network_name);
+
+my %hosts = (
+    "vm0" => {
+	role => "master",
+    },
+    "vm1" => {
+    	role => "web",
+    },
+    "vm2" => {
+    	role => "app",
+    },
+    "vm3" => {
+    	role => "db",
+    }
+);
+
+# Lifted from create_vapp_from_template
+my %template = $vcd->get_template($box_template);
+my %vdc = $vcd->get_vdc($vdcid);
+
+my @links = @{$vdc{Link}};
+my $url;
+
+for my $ref (@links) {
+    $url = $ref->{href} if $ref->{type} eq 'application/vnd.vmware.vcloud.composeVAppParams+xml';
+}
+
+
+($task_href,$ret) = $vcd->{api}->pec_vapp_create_from_sources(
+    {
+	vapp_name    => $vapp_name,
+	vapp_url     => $template{href},
+	vdcid        => $vdcid,
+	box_template => $templateid,
+	network_name => $network_name,
+	hosts        => \%hosts,
+	url          => $url,
+    });
 
 # Wait on task to complete
 my ($status,$task) = $vcd->wait_on_task($task_href);
@@ -89,44 +129,5 @@ my ($status,$task) = $vcd->wait_on_task($task_href);
 print "\nSTATUS: $status\n";
 print "\n" . Dumper($task) if $status eq 'error';
 
-# # vApp href
-$vapp_href = $task->{Owner}{$vapp_name}{href};
-my $vapp = $vcd->get_vapp( $vapp_href );
-
-my @hosts = qw|vm1 vm2 vm3|;
-my %hosts = (
-    "vm1" => {
-	role => "web",
-    },
-    "vm2" => {
-	role => "app",
-    },
-    "vm3" => {
-	role => "db",
-    }
-);
-
-my @tasks;
-foreach my $host (keys %hosts) {
-    print "\nCREATE: vm $host\n";
-    my $new_vm_name = $host;
-    ($task_href,$ret) = $vcd->{api}->pec_vapp_recompose_add_vm(
-	$vapp_name,
-	$vapp_href,
-	$new_vm_name,		# vm_name
-	$box_template,		# vm_href
-	$networkid,		# netid
-	$storage_profile,	# Storage Profile
-	$hosts{$host}{role}     # Role
-    );
-
-    ($status,$task) = $vcd->wait_on_task($task_href);
-    print "\nSTATUS: $status\n";
-    print "\n" . Dumper($task) if $status eq 'error';
-}
-
-# my %tasks_status = $vcd->wait_on_tasks(@tasks);
-
-$DB::single=1;
 
 print "Before going ...\n";
