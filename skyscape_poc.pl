@@ -51,6 +51,8 @@ my $vcd = new VMware::vCloud ( $hostname, $username, $password, $orgname, { debu
 my $templateid = 'https://api.vcd.portal.skyscapecloud.com/api/vAppTemplate/vappTemplate-c346f5d7-ea8f-4dae-a09b-a14025115423';
 # PSUPP
 my $networkid = 'https://api.vcd.portal.skyscapecloud.com/api/network/66ee48e4-4621-4969-bf8e-ef078ef0fa51';
+my $network_name = "PSUPP";
+
 #  MDS - Defra CAPDP-PSUPP (IL2-PROD-BASIC)
 my $vdcid = 'https://api.vcd.portal.skyscapecloud.com/api/vdc/c042926f-1ce8-4e4f-87a0-534b8c689b77';
 # CAPDP-PSUPP
@@ -59,7 +61,7 @@ my $orgid = 'https://api.vcd.portal.skyscapecloud.com/api/org/3aa61e25-d4b0-4101
 my $storage_profile = "https://api.vcd.portal.skyscapecloud.com/api/vdcStorageProfile/fd77b82f-5ff8-479f-b43d-418034bd8183";
 
 # vApp name
-my $vapp_name = 'PEC Example vApp08';
+my $vapp_name = 'DemovApp02';
 my $vapp_href;
 
 ### Delete Vapp if it already exists ...
@@ -79,7 +81,7 @@ if (exists $vapps{$vapp_name} ) {
 # my ($task_href,$ret) = $vcd->create_vapp_from_template($vapp_name,$vdcid,$templateid,$networkid);
 # base-centos6-x64-80G
 my $box_template = "https://api.vcd.portal.skyscapecloud.com/api/vAppTemplate/vm-33cd95a2-c984-41e1-be2a-750b6597732a";
-my ($task_href,$ret) = $vcd->create_vapp_from_sources($vapp_name,$vdcid,$box_template,$networkid);
+my ($task_href,$ret) = $vcd->create_vapp_from_sources($vapp_name,$vdcid,$box_template,$network_name);
 
 # Wait on task to complete
 my ($status,$task) = $vcd->wait_on_task($task_href);
@@ -92,11 +94,22 @@ $vapp_href = $task->{Owner}{$vapp_name}{href};
 my $vapp = $vcd->get_vapp( $vapp_href );
 
 my @hosts = qw|vm1 vm2 vm3|;
+my %hosts = (
+    "vm1" => {
+	role => "web",
+    },
+    "vm2" => {
+	role => "app",
+    },
+    "vm3" => {
+	role => "db",
+    }
+);
+
 my @tasks;
-foreach my $host (@hosts) {
+foreach my $host (keys %hosts) {
     print "\nCREATE: vm $host\n";
     my $new_vm_name = $host;
-    $DB::single=1;
     ($task_href,$ret) = $vcd->{api}->pec_vapp_recompose_add_vm(
 	$vapp_name,
 	$vapp_href,
@@ -104,6 +117,7 @@ foreach my $host (@hosts) {
 	$box_template,		# vm_href
 	$networkid,		# netid
 	$storage_profile,	# Storage Profile
+	$hosts{$host}{role}     # Role
     );
 
     ($status,$task) = $vcd->wait_on_task($task_href);

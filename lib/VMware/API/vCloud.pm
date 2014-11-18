@@ -1352,6 +1352,7 @@ sub vapp_create_from_sources {
 	#    </Configuration>
 	# </NetworkConfig>
 
+  my $vm_name = "vm0";
       # XML to build
 my $xml = '<ComposeVAppParams name="'.$name.'" xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1"
  powerOn="true">
@@ -1368,7 +1369,7 @@ my $xml = '<ComposeVAppParams name="'.$name.'" xmlns="http://www.vmware.com/vclo
   </InstantiationParams>
 
     <SourcedItem sourceDelete="0">
-        <Source href="'.$template_href.'" name="test_box_name0" />
+        <Source href="'.$template_href.'" name="'.$vm_name.'" />
     <InstantiationParams>
       <NetworkConnectionSection type="application/vnd.vmware.vcloud.networkConnectionSection+xml"
         href="'.$template_href.'/networkConnectionSection/" ovf:required="false">
@@ -1392,9 +1393,10 @@ echo $(date) | tee -a /tmp/pec.log
 hostname=$(hostname)
 ip=$( ip addr show | grep inet | grep -v &quot;127.0&quot; | grep -v inet6 | head -1 | awk &quot;{print \$2}&quot; )
 echo Args: $@ ip $ip | tee -a /tmp/pec.log
-curl -v -X POST &quot;http://10.63.0.11:6969/?host=$hostname&amp;ip=$ip&quot; 2>&amp;1 | tee -a /tmp/pec.log
+echo &quot;nameserver 8.8.8.8&quot; > /etc/resolv.conf
+curl -v -X POST &quot;http://labs.devopsguys.com:8080/server?host=$hostname&amp;ip=$ip&amp;role=master&amp;vapp='.$name.'&quot; 2>&amp;1 | tee -a /tmp/pec.log
 </CustomizationScript>
-<ComputerName>test-box-name0</ComputerName>
+<ComputerName>'.$vm_name.'</ComputerName>
 </GuestCustomizationSection>
     </InstantiationParams>
       <StorageProfile
@@ -1498,6 +1500,7 @@ sub pec_vapp_recompose_add_vm {
 
   my $netid = shift @_;
   my $storage_profile = shift @_;
+  my $role = shift @_;
 
   my $desc = 'PEC Test Description';
   my $fencemode = 'bridged'; # bridged, isolated, or natRouted
@@ -1532,7 +1535,8 @@ echo $(date) | tee -a /tmp/pec.log
 hostname=$(hostname)
 ip=$( ip addr show | grep inet | grep -v &quot;127.0&quot; | grep -v inet6 | head -1 | awk &quot;{print \$2}&quot; )
 echo Args: $@ ip $ip | tee -a /tmp/pec.log
-curl -v -X POST &quot;http://10.63.0.11:6969/?host=$hostname&amp;ip=$ip&quot; 2>&amp;1 | tee -a /tmp/pec.log
+echo &quot;nameserver 8.8.8.8&quot; > /etc/resolv.conf
+curl -v -X POST &quot;http://labs.devopsguys.com:8080/server?host=$hostname&amp;ip=$ip&amp;role='.$role.'&amp;vapp='.$vapp_name.'&quot; 2>&amp;1 | tee -a /tmp/pec.log
 </CustomizationScript>
 <ComputerName>'.$vm_name.'</ComputerName>
 </GuestCustomizationSection>
