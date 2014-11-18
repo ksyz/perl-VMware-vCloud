@@ -30,7 +30,6 @@ perl -d -Ilib ./skyscape_poc.pl --username "Org Username" --password 'Your passw
 
 use Data::Dumper;
 use Getopt::Long;
-use Term::Prompt;
 use VMware::vCloud;
 use strict;
 
@@ -41,10 +40,10 @@ my $retopt = GetOptions ( 'username=s' => \$username, 'password=s' => \$password
 		       'vappname=s' => \$vapp_name
 		   );
 
-$hostname = prompt('x','Hostname of the vCloud Server:', '', '' ) unless length $hostname;
-$username = prompt('x','Username:', '', undef ) unless length $username;
-$password = prompt('p','Password:', '', undef ) and print "\n" unless length $password;
-$orgname  = prompt('x','Orgname:', '', 'System' ) unless length $orgname;
+die "Missing hostname" unless length $hostname;
+die "Missing username" unless length $username;
+die "Missing password" unless length $password;
+die "Missing orgname" unless length $orgname;
 
 $vapp_name = "default_vapp" unless length $vapp_name;
 
