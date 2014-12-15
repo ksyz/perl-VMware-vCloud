@@ -1,3 +1,4 @@
+
 package VMware::API::vCloud;
 
 use Data::Dumper;
@@ -1393,6 +1394,7 @@ echo $(date) | tee -a /tmp/pec.log
 hostname=$(hostname)
 ip=$( ip addr show | grep inet | grep -v &quot;127.0&quot; | grep -v inet6 | head -1 | awk &quot;{print \$2}&quot; )
 echo Args: $@ ip $ip | tee -a /tmp/pec.log
+echo $(whoami) | tee -a /tmp/pec.log
 echo &quot;nameserver 8.8.8.8&quot; > /etc/resolv.conf
 curl -v -X POST &quot;http://labs.devopsguys.com:8080/server?host=$hostname&amp;ip=$ip&amp;role=master&amp;vapp='.$name.'&quot; 2>&amp;1 | tee -a /tmp/pec.log
 </CustomizationScript>
@@ -1458,6 +1460,7 @@ echo $(date) | tee -a /tmp/pec.log
 hostname=$(hostname)
 ip=$( ip addr show | grep inet | grep -v &quot;127.0&quot; | grep -v inet6 | head -1 | awk &quot;{print \$2}&quot; )
 echo Args: $@ ip $ip | tee -a /tmp/pec.log
+echo $(whoami) | tee -a /tmp/pec.log
 echo &quot;nameserver 8.8.8.8&quot; > /etc/resolv.conf
 curl -v -X POST &quot;http://labs.devopsguys.com:8080/server?host=$hostname&amp;ip=$ip&amp;role=%s&amp;vapp=%s&quot; 2>&amp;1 | tee -a /tmp/pec.log
 </CustomizationScript>
