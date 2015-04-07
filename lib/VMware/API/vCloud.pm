@@ -437,6 +437,9 @@ sub login {
   $self->{raw}->{login} = $self->_xml_response($response);
 
   for my $link ( @{$self->{raw}->{login}->{Link}} ) {
+	next 
+		unless defined $link->{type};
+
     $self->{learned}->{url}->{admin}         = $link->{href} if $link->{type} eq 'application/vnd.vmware.admin.vcloud+xml';
     $self->{learned}->{url}->{entity}        = $link->{href} if $link->{type} eq 'application/vnd.vmware.vcloud.entity+xml';
     $self->{learned}->{url}->{extensibility} = $link->{href} if $link->{type} eq 'application/vnd.vmware.vcloud.apiextensibility+xml';
