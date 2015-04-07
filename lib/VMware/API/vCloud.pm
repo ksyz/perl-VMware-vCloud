@@ -176,7 +176,7 @@ sub _fault {
   
   my $message = "\nERROR: ";
   
-  if ( length(@error) and ref $error[0] eq 'HTTP::Response' ) {
+  if ( @error && ref $error[0] eq 'HTTP::Response' ) {
     if ( $error[0]->content ) {
       $self->_debug(Dumper(\@error));
       $self->_debug('ERROR Status Line: ' . $error[0]->status_line);
@@ -1324,8 +1324,8 @@ sub vapp_create_from_sources {
   $self->_debug("API: vapp_create($url)\n") if $self->{debug};
 
   # XML to build
-
-my $xml = '<ComposeVAppParams name="'.$name.'" xmlns="http://www.vmware.com/vcloud/v1" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1">
+  my $xml;
+  $xml = '<ComposeVAppParams name="'.$name.'" xmlns="http://www.vmware.com/vcloud/v1" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1">
   <InstantiationParams>
     <NetworkConfigSection>
       <ovf:Info>Configuration parameters for logical networks</ovf:Info>
@@ -1357,7 +1357,7 @@ my $xml = '<ComposeVAppParams name="'.$name.'" xmlns="http://www.vmware.com/vclo
   <AllEULAsAccepted>true</AllEULAsAccepted>
 </ComposeVAppParams>';
 
-my $xml = '
+  $xml = '
 <InstantiateVAppTemplateParams name="'.$name.'" xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" >
 	<Description>Example FTP Server vApp</Description>
 	<InstantiationParams>
